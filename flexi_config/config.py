@@ -11,18 +11,27 @@ logger = logging.getLogger(__name__)
 class Config(object):
     profile_value = os.getenv('CONTEXT_ENV', 'local')
     profile = profile_value or 'local'
-    yaml_conf_path = abspath(join(
-        dirname(__file__),
-        f'../../../conf/{profile}-env.yaml'
-    ))
-    with open(yaml_conf_path, 'r') as stream:
-        try:
-            yaml_config = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            logger.exception()
+    yaml_config = None
+
+    @classmethod
+    def set_config_path(cls, path):
+        if os.path.exists:
+            yaml_conf_path = abspath(join(
+                path,
+                f'{cls.profile}-env.yaml'
+            ))
+            with open(yaml_conf_path, 'r') as stream:
+                try:
+                    cls.yaml_config = yaml.safe_load(stream)
+                except yaml.YAMLError:
+                    logger.exception()
+        else:
+            raise RuntimeError('Invalid path specified')
 
     @classmethod
     def get(cls, key):
+        if not cls.yaml_config:
+            raise RuntimeError('Config path must be set with `set_config_path(path)`')
         value = jmespath.search(key, cls.yaml_config)
         if value is not None and isinstance(value, str):
             if value.startswith('aws'):
