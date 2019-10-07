@@ -9,12 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 class Config(object):
+    """
+    Config object to facilitate parameter retrieval
+    """
     profile_value = os.getenv('CONTEXT_ENV', 'local')
     profile = profile_value or 'local'
     yaml_config = None
 
     @classmethod
     def set_config_path(cls, path):
+        """
+        Reads the appropriate YAML file at the given path into a class attribute.
+        :param path: Directory used to look for YAML config file
+        """
         if os.path.exists:
             yaml_conf_path = abspath(join(
                 path,
@@ -30,6 +37,12 @@ class Config(object):
 
     @classmethod
     def get(cls, key):
+        """
+        Retrieve configuration parameter using JMESPath key
+        :param key: JMESPath string like `database.airflow_db.username`
+        :return: Config value for given key
+        :rtype: str
+        """
         if not cls.yaml_config:
             raise RuntimeError('Config path must be set with `set_config_path(path)`')
         value = jmespath.search(key, cls.yaml_config)

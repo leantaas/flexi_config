@@ -1,0 +1,8 @@
+# Example config
+
+databases:
+  airflow_db: "aws:test/team/project/airflow"
+  beds_db: "aws:test/team/project/psql"
+
+sftp: "aws:test/team/project/sftp"
+
