@@ -1,11 +1,17 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import flexi_config
+
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
 setup(
     name='flexi-config',
     version=flexi_config.__version__,
     description='Flexible config objects utilizing AWS Secrets Manager',
-    author="Ryan Beaman",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://github.com/leantaas/flexi_config',
+    author="LeanTaaS",
     author_email="ryan.b@leantaas.com",
     install_requires=[
         'requests>=2.3.0',
@@ -20,4 +26,6 @@ setup(
         'six>=1.12.0',
         'urllib3>=1.25.3'
     ],
-    packages=['flexi_config'])
+    packages=find_packages(),
+    python_requires='>=3.6'
+)
