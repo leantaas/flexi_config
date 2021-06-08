@@ -49,10 +49,11 @@ class Config(object):
         if value is not None and isinstance(value, str):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
+                secret = cls.fetch_secret_value(parts_of_key[1])
                 if len(parts_of_key) == 2:
-                    return get_secret(parts_of_key[1])
+                    return secret
                 elif len(parts_of_key) == 3:
-                    return get_specific_secret(parts_of_key[2], parts_of_key[1])
+                    return secret.get(parts_of_key[2])
         elif value is None:
             key_parts = key.split('.')
             for i in range(1, len(key_parts)):
@@ -65,4 +66,11 @@ class Config(object):
                 return None
         return value
 
+    @classmethod
+    def fetch_secret_value(cls, secret_name: str):
+        payload = {"secret_name": secret_name}
+        base_url = "https://sandbox.com:4000"
 
+        response = requests.get(base_url, params=payload)
+
+        return json.loads(response)
