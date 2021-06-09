@@ -73,4 +73,6 @@ class Config(object):
 
         response = requests.get(base_url, params=payload)
 
-        return json.loads(response)
+        secrets_value = json.loads(response["body"])["secret_value"]
+
+        return secrets_value
