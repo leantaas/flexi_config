@@ -69,7 +69,7 @@ class Config(object):
     @classmethod
     def fetch_secret_value(cls, secret_name: str):
         payload = {"secret_name": secret_name}
-        base_url = "https://sandbox.com:4000"
+        base_url = "http://sandbox.com:4000"
 
         response = requests.get(base_url, params=payload)
 
