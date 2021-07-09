@@ -44,30 +44,37 @@ class Config(object):
         :rtype: str
         """
         if not cls.yaml_config:
-            raise RuntimeError('Config path must be set with `set_config_path(path)`')
+            raise RuntimeError("Config path must be set with `set_config_path(path)`")
         value = jmespath.search(key, cls.yaml_config)
         if value is not None and isinstance(value, str):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
-                secret = cls.fetch_secret_value(parts_of_key[1])
                 if len(parts_of_key) == 2:
-                    return secret
+                    return get_secret(parts_of_key[1])
                 elif len(parts_of_key) == 3:
-                    return secret.get(parts_of_key[2])
+                    return get_specific_secret(parts_of_key[2], parts_of_key[1])
+            elif value.startswith("cache"):
+                parts_of_key = value.split(":")
+                if len(parts_of_key) == 3:
+                    secret = cls.fetch_secret_value_from_cache(parts_of_key[2])
+                    return secret
+                elif len(parts_of_key) == 4:
+                    secret = cls.fetch_secret_value_from_cache((parts_of_key[2]))
+                    return secret.get(parts_of_key[3])
         elif value is None:
-            key_parts = key.split('.')
+            key_parts = key.split(".")
             for i in range(1, len(key_parts)):
-                k = '.'.join(key_parts[:-i])
+                k = ".".join(key_parts[:-i])
                 v = cls.get(k)
                 if v is not None and i < len(key_parts) - 1:
-                    value = jmespath.search('.'.join(key_parts[i + 1:]), v)
+                    value = jmespath.search(".".join(key_parts[i + 1 :]), v)
                     break
             else:
                 return None
         return value
 
     @classmethod
-    def fetch_secret_value(cls, secret_name: str):
+    def fetch_secret_value_from_cache(cls, secret_name: str):
         payload = {"secret_name": secret_name}
         base_url = "http://sandbox.com:4000"
 
