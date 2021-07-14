@@ -15,7 +15,7 @@ class Config(object):
     profile_value = os.getenv('CONTEXT_ENV', 'local')
     profile = profile_value or 'local'
     yaml_config = None
-    base_url = "http://sandbox.com:4000"
+    base_url = "http://localhost.com:4000"
 
     @classmethod
     def set_config_path(cls, path):
