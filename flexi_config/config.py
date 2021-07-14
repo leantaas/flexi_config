@@ -15,6 +15,7 @@ class Config(object):
     profile_value = os.getenv('CONTEXT_ENV', 'local')
     profile = profile_value or 'local'
     yaml_config = None
+    base_url = "http://sandbox.com:4000"
 
     @classmethod
     def set_config_path(cls, path):
@@ -55,12 +56,11 @@ class Config(object):
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
             elif value.startswith("cache"):
                 parts_of_key = value.split(":")
-                if len(parts_of_key) == 3:
-                    secret = cls.fetch_secret_value_from_cache(parts_of_key[2])
+                secret = self.handle_secret_fetch_for_cached(parts_of_key[3], parts_of_key[1])
+                if len(parts_of_key) == 4: 
                     return secret
-                elif len(parts_of_key) == 4:
-                    secret = cls.fetch_secret_value_from_cache((parts_of_key[2]))
-                    return secret.get(parts_of_key[3])
+                elif len(parts_of_key) == 5:
+                    return secret.get(parts_of_key[4])
         elif value is None:
             key_parts = key.split(".")
             for i in range(1, len(key_parts)):
@@ -73,13 +73,36 @@ class Config(object):
                 return None
         return value
 
-    @classmethod
-    def fetch_secret_value_from_cache(cls, secret_name: str):
-        payload = {"secret_name": secret_name}
-        base_url = "http://sandbox.com:4000"
+    def handle_secret_fetch_for_cached(self, secret_key: str, ttl: object):
+        secret_value = None
+        try:
+            response_from_cache = self.fetch_secret_value_from_cache(secret_key)
 
-        response = requests.get(base_url, params=payload)
+            if response_from_cache["is_cache_exists_and_not_expired"] and response_from_cache["secret_value"]:
+                secret_value = response_from_cache["secret_value"]
+            else:
+                secret_value = get_secret(parts_of_key[2])
+                response = self.write_secret_to_cache(secret_key=parts_of_key[2], secret_value=secret_value_to_write, ttl=ttl)
+
+            if not secret_value:
+                raise Exception("Invalid secret value received!")
+        except:
+            raise Exception("Error occured in fectching the secrets for cached.")
+        return secret_value
+
+
+    def fetch_secret_value_from_cache(self, secret_key: str):
+        query_param = {"secret_key": secret_key}
+
+        response = requests.get(url = self.base_url, params=query_param)
 
         secrets_value = json.loads(response["body"])["secret_value"]
 
         return secrets_value
+
+    def write_secret_to_cache(self, secret_key: str, secret_value: str, ttl: object):
+        payload = {"secret_key": secret_key, "secret_value": secret_value, "ttl": ttl}
+
+        response = requests.post(url = self.base_url, data = payload)
+
+        return response
