@@ -56,7 +56,7 @@ class Config(object):
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
             elif value.startswith("cache"):
                 parts_of_key = value.split(":")
-                secret = self.handle_secret_fetch_for_cached(parts_of_key[3], parts_of_key[1])
+                secret = cls.handle_secret_fetch_for_cached(parts_of_key[3], parts_of_key[1])
                 if len(parts_of_key) == 4: 
                     return secret
                 elif len(parts_of_key) == 5:
@@ -73,16 +73,17 @@ class Config(object):
                 return None
         return value
 
-    def handle_secret_fetch_for_cached(self, secret_key: str, ttl: object):
+    @classmethod
+    def handle_secret_fetch_for_cached(cls, secret_key: str, ttl: object):
         secret_value = None
         try:
-            response_from_cache = self.fetch_secret_value_from_cache(secret_key)
+            response_from_cache = cls.fetch_secret_value_from_cache(secret_key)
 
             if response_from_cache["is_cache_exists_and_not_expired"] and response_from_cache["secret_value"]:
                 secret_value = response_from_cache["secret_value"]
             else:
                 secret_value = get_secret(parts_of_key[2])
-                response = self.write_secret_to_cache(secret_key=parts_of_key[2], secret_value=secret_value_to_write, ttl=ttl)
+                response = cls.write_secret_to_cache(secret_key=parts_of_key[2], secret_value=secret_value_to_write, ttl=ttl)
 
             if not secret_value:
                 raise Exception("Invalid secret value received!")
@@ -91,18 +92,20 @@ class Config(object):
         return secret_value
 
 
-    def fetch_secret_value_from_cache(self, secret_key: str):
+    @classmethod
+    def fetch_secret_value_from_cache(cls, secret_key: str):
         query_param = {"secret_key": secret_key}
 
-        response = requests.get(url = self.base_url, params=query_param)
+        response = requests.get(url = cls.base_url, params=query_param)
 
         secrets_value = json.loads(response["body"])["secret_value"]
 
         return secrets_value
 
-    def write_secret_to_cache(self, secret_key: str, secret_value: str, ttl: object):
+    @classmethod
+    def write_secret_to_cache(cls, secret_key: str, secret_value: str, ttl: object):
         payload = {"secret_key": secret_key, "secret_value": secret_value, "ttl": ttl}
 
-        response = requests.post(url = self.base_url, data = payload)
+        response = requests.post(url = cls.base_url, data = payload)
 
         return response
