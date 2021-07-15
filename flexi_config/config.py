@@ -103,8 +103,15 @@ class Config(object):
         return secrets_value
 
     @classmethod
-    def write_secret_to_cache(cls, secret_key: str, secret_value: str, ttl: object):
-        payload = {"secret_key": secret_key, "secret_value": secret_value, "ttl": ttl}
+    def write_secret_to_cache(cls, secret_key: str, secret_value: str, ttl: str):
+        if ttl[-1] == "m":
+            ttl_obj["minutes"] = int(ttl[:-1]) 
+        elif ttl[-1] == "s":
+            ttl_obj["seconds"] = int(ttl[:-1])
+        else:
+            ttl_obj = None
+
+        payload = {"secret_key": secret_key, "secret_value": secret_value, "ttl": ttl_obj}
 
         response = requests.post(url = cls.base_url, data = payload)
 
