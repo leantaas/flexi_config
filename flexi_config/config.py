@@ -87,7 +87,7 @@ class Config(object):
                 secret_value = get_secret(parts_of_key[2])
                 response = cls.write_secret_to_cache(secret_key=parts_of_key[2], secret_value=secret_value_to_write, ttl=ttl)
                 print("Fetched the secret value from the AWS secrets instead of Cache!!!")
-                logger.inof("Fetched the secret value from the AWS secrets instead of Cache!!!")
+                logger.info("Fetched the secret value from the AWS secrets instead of Cache!!!")
 
             if not secret_value:
                 raise Exception("Invalid secret value received!")
