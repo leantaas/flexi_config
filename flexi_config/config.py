@@ -36,7 +36,7 @@ class Config(object):
             raise RuntimeError('Invalid path specified')
 
     @classmethod
-    def get(cls, key):
+    def get(cls, key, region='us-west-2'):
         """
         Retrieve configuration parameter using JMESPath key
         :param key: JMESPath string like `database.airflow_db.username`
@@ -50,7 +50,7 @@ class Config(object):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
                 if len(parts_of_key) == 2:
-                    return get_secret(parts_of_key[1])
+                    return get_secret(parts_of_key[1], region_name=region)
                 elif len(parts_of_key) == 3:
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
         elif value is None:
