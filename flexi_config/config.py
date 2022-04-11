@@ -7,14 +7,13 @@ import jmespath
 
 logger = logging.getLogger(__name__)
 
-REGION = os.getenv(key='AWS_DEFAULT_REGION', default='us-west-2')
-
 
 class Config(object):
     """
     Config object to facilitate parameter retrieval
     """
-    profile_value = os.getenv('CONTEXT_ENV', 'local')
+    aws_region = os.getenv(key='AWS_REGION', default='us-west-2')
+    profile_value = os.getenv(key='CONTEXT_ENV', default='local')
     profile = profile_value or 'local'
     yaml_config = None
 
@@ -52,7 +51,7 @@ class Config(object):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
                 if len(parts_of_key) == 2:
-                    return get_secret(parts_of_key[1], region_name=REGION)
+                    return get_secret(parts_of_key[1], region_name=region)
                 elif len(parts_of_key) == 3:
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
         elif value is None:
