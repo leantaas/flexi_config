@@ -7,6 +7,8 @@ import jmespath
 
 logger = logging.getLogger(__name__)
 
+REGION = os.getenv(key='AWS_DEFAULT_REGION', default='us-west-2')
+
 
 class Config(object):
     """
@@ -50,7 +52,7 @@ class Config(object):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
                 if len(parts_of_key) == 2:
-                    return get_secret(parts_of_key[1])
+                    return get_secret(parts_of_key[1], region_name=REGION)
                 elif len(parts_of_key) == 3:
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
         elif value is None:
