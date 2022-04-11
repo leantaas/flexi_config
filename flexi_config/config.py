@@ -51,7 +51,7 @@ class Config(object):
             if value.startswith('aws'):
                 parts_of_key = value.split(":")
                 if len(parts_of_key) == 2:
-                    return get_secret(parts_of_key[1], region_name=region)
+                    return get_secret(parts_of_key[1], region_name=cls.aws_region)
                 elif len(parts_of_key) == 3:
                     return get_specific_secret(parts_of_key[2], parts_of_key[1])
         elif value is None:
