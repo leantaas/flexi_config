@@ -1,7 +1,11 @@
+import re
 from os.path import join, dirname, abspath
 import logging
 import yaml
 import os
+
+from yaml.reader import Reader
+
 from .aws_secrets import get_secret, get_specific_secret
 import jmespath
 
@@ -32,9 +36,13 @@ class Config(object):
             ))
             with open(yaml_conf_path, 'r') as stream:
                 try:
-                    cls.yaml_config = yaml.safe_load(stream)
-                except yaml.YAMLError:
-                    logger.exception()
+                    # sometimes (especially when running on Docker?) yaml files get special characters such as
+                    # \x00 added. This works around that bug by removing them.
+                    full_dirty_yaml = stream.read()
+                    full_cleaned_yaml = re.sub(Reader.NON_PRINTABLE, '', full_dirty_yaml)
+                    cls.yaml_config = yaml.safe_load(full_cleaned_yaml)
+                except yaml.YAMLError as err:
+                    logger.exception(err)
         else:
             raise RuntimeError('Invalid path specified')
 
